@@ -18,7 +18,7 @@ public class StuckControl implements Control {
 
         double speedModule = hypot(self.getSpeedX(), self.getSpeedY());
 
-        if (Math.abs(speedModule) < 2 &&
+        if (Math.abs(speedModule) < 3 &&
                 backTicks < 0 &&
                 world.getTick() > game.getInitialFreezeDurationTicks()+10) {
             stuckCtr++;

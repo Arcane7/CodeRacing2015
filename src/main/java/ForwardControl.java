@@ -21,20 +21,37 @@ public class ForwardControl implements Control {
         double speedModule = hypot(self.getSpeedX(), self.getSpeedY());
         double distanceToTurn = self.getDistanceTo(adjustPointForTurn.getX(), adjustPointForTurn.getY());
 
-        boolean is180Turn = is180Turn(currentPoint, turnAfterNext);
-        if (distanceToTurn < 700 && !is180Turn) {
-            adjustPointForTurn = turnAfterNext.getPoint();
-        }
-        double angleToGoal = self.getAngleTo(adjustPointForTurn.getX(), adjustPointForTurn.getY());
+        setSpeed(move, nextTurn, turnAfterNext, speedModule, distanceToTurn);
 
-        double speedDistance = speedModule * 65;
-        if (distanceToTurn < speedDistance && speedModule > 15) {
+        setTurn(self, move, turnAfterNext, adjustPointForTurn, speedModule, distanceToTurn);
+    }
+
+    private void setSpeed(Move move, MovingPoint nextTurn, MovingPoint turnAfterNext, double speedModule, double distanceToTurn) {
+        boolean sequentialTurns = sequentialTurns(nextTurn, turnAfterNext);
+        if (distanceToTurn < 700 && sequentialTurns && speedModule > 10) {
             move.setEnginePower(-1D);
         } else {
-            move.setEnginePower(1D);
+
+            double speedDistance = speedModule * 65;
+            if (distanceToTurn < speedDistance && speedModule > 15) {
+                move.setEnginePower(-1D);
+            } else {
+                move.setEnginePower(1D);
+            }
+        }
+    }
+
+    private void setTurn(Car self, Move move, MovingPoint turnAfterNext, Point adjustPointForTurn, double speedModule, double distanceToTurn) {
+        if (distanceToTurn < 700 && speedModule > 10) {
+            adjustPointForTurn = turnAfterNext.getPoint();
         }
 
+        double angleToGoal = self.getAngleTo(adjustPointForTurn.getX(), adjustPointForTurn.getY());
         move.setWheelTurn(angleToGoal);
+    }
+
+    private boolean sequentialTurns(MovingPoint nextTurn, MovingPoint turnAfterNext) {
+        return turnAfterNext.getIndex() - nextTurn.getIndex() == 1;
     }
 
     private boolean is180Turn(MovingPoint currentPoint, MovingPoint turnAfterNext) {
