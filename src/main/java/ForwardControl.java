@@ -30,7 +30,7 @@ public class ForwardControl implements Control {
         boolean is180Turn = is180Turn(prevPoint, currentPoint, nextTurn, turnAfterNext);
         double angleToGoal = self.getAngleTo(adjustPointForTurn.getX(), adjustPointForTurn.getY());
 
-        if (speedModule > 7 && (Math.abs(angleToGoal) > 0.4d || is180Turn)) {
+        if (speedModule > 7 && is180Turn) {
             if(speedModule < 5){
                 move.setEnginePower(0.5D);
             } else {

@@ -8,7 +8,7 @@ import static java.lang.StrictMath.hypot;
 public class StuckControl implements Control {
 
     public static final int BACK_TICKS = 150;
-    public static final int STUCK_DETECT = 20;
+    public static final int STUCK_DETECT = 60;
 
     private int backTicks = -1;
     private int stuckCtr = -1;
