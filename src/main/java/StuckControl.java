@@ -18,12 +18,12 @@ public class StuckControl implements Control {
 
         double speedModule = hypot(self.getSpeedX(), self.getSpeedY());
 
-        if (Math.abs(speedModule) < 3 &&
+        if (Math.abs(speedModule) < 2 &&
                 backTicks < 0 &&
                 world.getTick() > game.getInitialFreezeDurationTicks()+10) {
             stuckCtr++;
-            if(stuckCtr > 10) {
-                backTicks = 30;
+            if(stuckCtr > 20) {
+                backTicks = 60;
                 stuckCtr = -1;
 
                 Point adjustPointForTurn = Utils.adjustTargetPoint(game, nextTurn);
@@ -34,7 +34,13 @@ public class StuckControl implements Control {
         if (backTicks >= 0) {
             backTicks--;
             move.setEnginePower(-1D);
-            move.setWheelTurn(-backAngle);
+            if( backTicks <= 20){
+                stuckCtr = -1;
+                backTicks = -1;
+                move.setWheelTurn(backAngle);
+            } else {
+                move.setWheelTurn(-backAngle);
+            }
             if(Math.abs(speedModule) < 2 && backTicks <= 20){
                 stuckCtr = -1;
                 backTicks = -1;
