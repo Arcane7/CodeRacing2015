@@ -1,7 +1,4 @@
-import model.Car;
-import model.Game;
-import model.Move;
-import model.World;
+import model.*;
 
 import static java.lang.StrictMath.hypot;
 
@@ -14,6 +11,7 @@ public class ForwardControl implements Control {
 
     private void setMovement(Car self, Move move, World world, Game game) {
         MovingPoint currentPoint = Utils.getMap().getCurrentPoint(self, world, game);
+        MovingPoint prevPoint = Utils.getMap().getPrevPoint(currentPoint);
         MovingPoint nextTurn = Utils.getMap().getNextTurn(currentPoint);
         MovingPoint turnAfterNext = Utils.getMap().getNextTurn(nextTurn);
 
@@ -21,24 +19,49 @@ public class ForwardControl implements Control {
         double speedModule = hypot(self.getSpeedX(), self.getSpeedY());
         double distanceToTurn = self.getDistanceTo(adjustPointForTurn.getX(), adjustPointForTurn.getY());
 
-        setSpeed(move, nextTurn, turnAfterNext, speedModule, distanceToTurn);
+        setSpeed(self, adjustPointForTurn, move, prevPoint, currentPoint, nextTurn, turnAfterNext, speedModule, distanceToTurn);
 
         setTurn(self, move, turnAfterNext, adjustPointForTurn, speedModule, distanceToTurn);
     }
 
-    private void setSpeed(Move move, MovingPoint nextTurn, MovingPoint turnAfterNext, double speedModule, double distanceToTurn) {
+    private void setSpeed(Car self, Point adjustPointForTurn, Move move, MovingPoint prevPoint, MovingPoint currentPoint, MovingPoint nextTurn, MovingPoint turnAfterNext, double speedModule, double distanceToTurn) {
+        boolean ladder = isLadder(currentPoint, nextTurn, turnAfterNext);
         boolean sequentialTurns = sequentialTurns(nextTurn, turnAfterNext);
-        if (distanceToTurn < 700 && sequentialTurns && speedModule > 10) {
-            move.setEnginePower(-1D);
-        } else {
+        boolean is180Turn = is180Turn(prevPoint, currentPoint, nextTurn, turnAfterNext);
+        double angleToGoal = self.getAngleTo(adjustPointForTurn.getX(), adjustPointForTurn.getY());
 
-            double speedDistance = speedModule * 65;
-            if (distanceToTurn < speedDistance && speedModule > 15) {
-                move.setEnginePower(-1D);
+        if (speedModule > 7 && (Math.abs(angleToGoal) > 0.4d || is180Turn)) {
+            if(speedModule < 5){
+                move.setEnginePower(0.5D);
             } else {
-                move.setEnginePower(1D);
+                move.setEnginePower(-0.5D);
+            }
+        } else {
+            if (ladder) {
+                if (speedModule > 20) {
+                    move.setEnginePower(-1D);
+                } else {
+                    move.setEnginePower(1D);
+                }
+            } else {
+                double speedDistance = speedModule * 65;
+                if (distanceToTurn < speedDistance && speedModule > 15) {
+                    move.setEnginePower(-1D);
+                } else {
+                    move.setEnginePower(1D);
+                }
             }
         }
+    }
+
+    private boolean isLadder(MovingPoint currentPoint, MovingPoint nextTurn, MovingPoint turnAfterNext) {
+        if (currentPoint.isTurn() && sequentialTurns(currentPoint, nextTurn) && sequentialTurns(nextTurn, turnAfterNext)) {
+            if (currentPoint.getDirectionAfter() == turnAfterNext.getDirectionAfter() &&
+                    currentPoint.getDirectionBefore() == turnAfterNext.getDirectionBefore()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void setTurn(Car self, Move move, MovingPoint turnAfterNext, Point adjustPointForTurn, double speedModule, double distanceToTurn) {
@@ -51,11 +74,13 @@ public class ForwardControl implements Control {
     }
 
     private boolean sequentialTurns(MovingPoint nextTurn, MovingPoint turnAfterNext) {
-        return turnAfterNext.getIndex() - nextTurn.getIndex() == 1;
+        return Math.abs(turnAfterNext.getIndex() - nextTurn.getIndex()) == 1;
     }
 
-    private boolean is180Turn(MovingPoint currentPoint, MovingPoint turnAfterNext) {
-        return Utils.isOpposite(currentPoint.getDirectionAfter(), turnAfterNext.getDirectionAfter());
+    private boolean is180Turn(MovingPoint prevPoint, MovingPoint currentPoint, MovingPoint nextTurn, MovingPoint turnAfterNext) {
+        return (sequentialTurns(nextTurn, turnAfterNext) && Utils.isOpposite(currentPoint.getDirectionAfter(), turnAfterNext.getDirectionAfter())) ||
+                (sequentialTurns(currentPoint, nextTurn) && Utils.isOpposite(currentPoint.getDirectionBefore(), nextTurn.getDirectionAfter())) ||
+                (sequentialTurns(prevPoint, currentPoint) && Utils.isOpposite(prevPoint.getDirectionBefore(), currentPoint.getDirectionAfter()));
     }
 
 }

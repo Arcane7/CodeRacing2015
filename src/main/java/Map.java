@@ -20,19 +20,44 @@ public class Map {
         preparePointsPath(world, game, completePath);
     }
 
+    public MovingPoint getPrevPoint(MovingPoint point) {
+        if(point.getIndex() == 0){
+            return points.get(points.size() -1);
+        } else {
+            return points.get(point.getIndex() -1);
+        }
+    }
+
     public MovingPoint getCurrentPoint(Car self, World world, Game game) {
         Waypoint tile = Utils.getTile(world, game, new Point(self.getX(), self.getY()));
+
         int startFromWP = self.getNextWaypointIndex() - 1;
+        if(startFromWP < 0){
+            startFromWP = world.getWaypoints().length-1;
+        }
+
         boolean startPoint = false;
+        int i = 0;
         for (MovingPoint point : points) {
             if (point.getWaypoint().getIndex() != null && point.getWaypoint().getIndex().equals(startFromWP)) {
                 startPoint = true;
+            } else {
+                i++;
             }
 
             if (startPoint && point.getWaypoint().equals(tile)) {
                 return point;
             }
         }
+
+        // search backwards - in case car has lost a path
+        for(;i>0; i--){
+            MovingPoint movingPoint = points.get(i);
+            if (movingPoint.getWaypoint().equals(tile)) {
+                return movingPoint;
+            }
+        }
+
         return null;
     }
 

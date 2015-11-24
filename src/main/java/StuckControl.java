@@ -7,6 +7,9 @@ import static java.lang.StrictMath.hypot;
 
 public class StuckControl implements Control {
 
+    public static final int BACK_TICKS = 150;
+    public static final int STUCK_DETECT = 20;
+
     private int backTicks = -1;
     private int stuckCtr = -1;
     private double backAngle;
@@ -22,8 +25,8 @@ public class StuckControl implements Control {
                 backTicks < 0 &&
                 world.getTick() > game.getInitialFreezeDurationTicks()+10) {
             stuckCtr++;
-            if(stuckCtr > 20) {
-                backTicks = 60;
+            if(stuckCtr > STUCK_DETECT) {
+                backTicks = BACK_TICKS;
                 stuckCtr = -1;
 
                 Point adjustPointForTurn = Utils.adjustTargetPoint(game, nextTurn);
@@ -33,15 +36,17 @@ public class StuckControl implements Control {
 
         if (backTicks >= 0) {
             backTicks--;
-            move.setEnginePower(-1D);
-            if( backTicks <= 20){
-                stuckCtr = -1;
-                backTicks = -1;
-                move.setWheelTurn(backAngle);
+
+            if( backTicks <= BACK_TICKS/2){
+                move.setEnginePower(0.5d);
+                move.setWheelTurn(0d);
             } else {
+                move.setEnginePower(-1D);
                 move.setWheelTurn(-backAngle);
             }
-            if(Math.abs(speedModule) < 2 && backTicks <= 20){
+
+            if(Math.abs(speedModule) < 2 &&
+                    backTicks <= BACK_TICKS/2){
                 stuckCtr = -1;
                 backTicks = -1;
             }
