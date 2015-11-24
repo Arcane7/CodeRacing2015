@@ -3,8 +3,6 @@ import model.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.StrictMath.*;
-
 public final class MyStrategy implements Strategy {
 
     private static boolean initialized = false;
@@ -15,8 +13,9 @@ public final class MyStrategy implements Strategy {
         try {
             init(world, game);
 
-
-//            setBrakes(self, move, goal);
+            for (Control control : controls) {
+                control.doSmth(move, self, world, game);
+            }
 
         } catch (Throwable t) {
             t.printStackTrace();
@@ -29,19 +28,12 @@ public final class MyStrategy implements Strategy {
             Utils.getMap().buildMap(world, game);
 
             controls.add(new ForwardControl());
-            controls.add(new BackControl());
+            controls.add(new BrakeControl());
+            controls.add(new StuckControl());
+            controls.add(new OilControl());
+            controls.add(new ShootControl());
+            controls.add(new NitroControl());
         }
     }
-
-    private void setBrakes(Car self, Move move, MovingPoint goal) {
-
-        double speedModule = hypot(self.getSpeedX(), self.getSpeedY());
-        double distanceToGoal = self.getDistanceTo(goal.getPoint().getX(), goal.getPoint().getY());
-        if (distanceToGoal < 1000 && speedModule > 10) {
-            move.setBrake(true);
-        }
-
-    }
-
 
 }

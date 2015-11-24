@@ -52,4 +52,74 @@ public class Utils {
     public static Map getMap() {
         return map;
     }
+
+    public static boolean isOpposite(Direction direction1, Direction direction2){
+        if(direction1 == Direction.RIGHT && direction2 == Direction.LEFT ||
+                direction1 == Direction.LEFT && direction2 == Direction.RIGHT ||
+                direction1 == Direction.UP && direction2 == Direction.DOWN ||
+                direction1 == Direction.DOWN && direction2 == Direction.UP){
+            return true;
+        }
+        return false;
+    }
+
+    public static Point adjustTargetPoint(Game game, MovingPoint point) {
+        Point waypoint1Center = point.getPoint().clone();
+
+        double cornerTileOffset = 0.2D * game.getTrackTileSize();
+
+        switch (point.getDirectionBefore()) {
+            case UP:
+                switch (point.getDirectionAfter()) {
+                    case LEFT:
+                        waypoint1Center.addX(-cornerTileOffset);
+                        waypoint1Center.addY(cornerTileOffset);
+                        break;
+                    case RIGHT:
+                        waypoint1Center.addX(cornerTileOffset);
+                        waypoint1Center.addY(cornerTileOffset);
+                        break;
+                }
+                break;
+            case DOWN:
+                switch (point.getDirectionAfter()) {
+                    case LEFT:
+                        waypoint1Center.addX(-cornerTileOffset);
+                        waypoint1Center.addY(-cornerTileOffset);
+                        break;
+                    case RIGHT:
+                        waypoint1Center.addX(cornerTileOffset);
+                        waypoint1Center.addY(-cornerTileOffset);
+                        break;
+                }
+                break;
+            case LEFT:
+                switch (point.getDirectionAfter()) {
+                    case UP:
+                        waypoint1Center.addX(cornerTileOffset);
+                        waypoint1Center.addY(-cornerTileOffset);
+                        break;
+                    case DOWN:
+                        waypoint1Center.addX(cornerTileOffset);
+                        waypoint1Center.addY(cornerTileOffset);
+                        break;
+                }
+                break;
+            case RIGHT:
+                switch (point.getDirectionAfter()) {
+                    case UP:
+                        waypoint1Center.addX(-cornerTileOffset);
+                        waypoint1Center.addY(-cornerTileOffset);
+                        break;
+                    case DOWN:
+                        waypoint1Center.addX(-cornerTileOffset);
+                        waypoint1Center.addY(cornerTileOffset);
+                        break;
+                }
+                break;
+        }
+
+        return waypoint1Center;
+    }
+
 }

@@ -15,12 +15,14 @@ public class ForwardControl implements Control {
     private void setMovement(Car self, Move move, World world, Game game) {
         MovingPoint currentPoint = Utils.getMap().getCurrentPoint(self, world, game);
         MovingPoint nextTurn = Utils.getMap().getNextTurn(currentPoint);
-        Point adjustPointForTurn = findTargetPoint(game, nextTurn);
+        MovingPoint turnAfterNext = Utils.getMap().getNextTurn(nextTurn);
+
+        Point adjustPointForTurn = Utils.adjustTargetPoint(game, nextTurn);
         double speedModule = hypot(self.getSpeedX(), self.getSpeedY());
         double distanceToTurn = self.getDistanceTo(adjustPointForTurn.getX(), adjustPointForTurn.getY());
 
-        if (distanceToTurn < 700) {
-            MovingPoint turnAfterNext = Utils.getMap().getNextTurn(nextTurn);
+        boolean is180Turn = is180Turn(currentPoint, turnAfterNext);
+        if (distanceToTurn < 700 && !is180Turn) {
             adjustPointForTurn = turnAfterNext.getPoint();
         }
         double angleToGoal = self.getAngleTo(adjustPointForTurn.getX(), adjustPointForTurn.getY());
@@ -35,63 +37,8 @@ public class ForwardControl implements Control {
         move.setWheelTurn(angleToGoal);
     }
 
-    private Point findTargetPoint(Game game, MovingPoint point) {
-        Point waypoint1Center = point.getPoint().clone();
-
-        double cornerTileOffset = 0.2D * game.getTrackTileSize();
-
-        switch (point.getDirectionBefore()) {
-            case UP:
-                switch (point.getDirectionAfter()) {
-                    case LEFT:
-                        waypoint1Center.addX(-cornerTileOffset);
-                        waypoint1Center.addY(cornerTileOffset);
-                        break;
-                    case RIGHT:
-                        waypoint1Center.addX(cornerTileOffset);
-                        waypoint1Center.addY(cornerTileOffset);
-                        break;
-                }
-                break;
-            case DOWN:
-                switch (point.getDirectionAfter()) {
-                    case LEFT:
-                        waypoint1Center.addX(-cornerTileOffset);
-                        waypoint1Center.addY(-cornerTileOffset);
-                        break;
-                    case RIGHT:
-                        waypoint1Center.addX(cornerTileOffset);
-                        waypoint1Center.addY(-cornerTileOffset);
-                        break;
-                }
-                break;
-            case LEFT:
-                switch (point.getDirectionAfter()) {
-                    case UP:
-                        waypoint1Center.addX(cornerTileOffset);
-                        waypoint1Center.addY(-cornerTileOffset);
-                        break;
-                    case DOWN:
-                        waypoint1Center.addX(cornerTileOffset);
-                        waypoint1Center.addY(cornerTileOffset);
-                        break;
-                }
-                break;
-            case RIGHT:
-                switch (point.getDirectionAfter()) {
-                    case UP:
-                        waypoint1Center.addX(-cornerTileOffset);
-                        waypoint1Center.addY(-cornerTileOffset);
-                        break;
-                    case DOWN:
-                        waypoint1Center.addX(-cornerTileOffset);
-                        waypoint1Center.addY(cornerTileOffset);
-                        break;
-                }
-                break;
-        }
-
-        return waypoint1Center;
+    private boolean is180Turn(MovingPoint currentPoint, MovingPoint turnAfterNext) {
+        return Utils.isOpposite(currentPoint.getDirectionAfter(), turnAfterNext.getDirectionAfter());
     }
 
 }
