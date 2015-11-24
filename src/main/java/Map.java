@@ -14,6 +14,7 @@ public class Map {
         return !points.isEmpty();
     }
 
+    // TODO sse: generate in points right away! use direction to restrict going back paths!
     public void buildMap(World world, Game game) {
         List<Waypoint> completePath = findPathInWaypoints(world);
 

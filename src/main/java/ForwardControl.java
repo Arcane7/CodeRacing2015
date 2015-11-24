@@ -4,6 +4,8 @@ import static java.lang.StrictMath.hypot;
 
 public class ForwardControl implements Control {
 
+    private MovingPoint lastPoint;
+
     @Override
     public void doSmth(Move move, Car self, World world, Game game) {
         setMovement(self, move, world, game);
@@ -11,6 +13,8 @@ public class ForwardControl implements Control {
 
     private void setMovement(Car self, Move move, World world, Game game) {
         MovingPoint currentPoint = Utils.getMap().getCurrentPoint(self, world, game);
+        currentPoint = rememberLastPoint(currentPoint);
+
         MovingPoint prevPoint = Utils.getMap().getPrevPoint(currentPoint);
         MovingPoint nextTurn = Utils.getMap().getNextTurn(currentPoint);
         MovingPoint turnAfterNext = Utils.getMap().getNextTurn(nextTurn);
@@ -22,6 +26,15 @@ public class ForwardControl implements Control {
         setSpeed(self, adjustPointForTurn, move, prevPoint, currentPoint, nextTurn, turnAfterNext, speedModule, distanceToTurn);
 
         setTurn(self, move, turnAfterNext, adjustPointForTurn, speedModule, distanceToTurn);
+    }
+
+    private MovingPoint rememberLastPoint(MovingPoint currentPoint) {
+        if(currentPoint != null) {
+            lastPoint = currentPoint;
+        } else {
+            currentPoint = lastPoint;
+        }
+        return currentPoint;
     }
 
     private void setSpeed(Car self, Point adjustPointForTurn, Move move, MovingPoint prevPoint, MovingPoint currentPoint, MovingPoint nextTurn, MovingPoint turnAfterNext, double speedModule, double distanceToTurn) {
