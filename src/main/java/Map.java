@@ -6,6 +6,8 @@ public class Map {
 
     private List<MovingPoint> points = new ArrayList<>();
 
+    private MovingPoint lastPoint;
+
     public List<MovingPoint> getMap() {
         return Collections.unmodifiableList(points);
     }
@@ -30,6 +32,7 @@ public class Map {
     }
 
     public MovingPoint getCurrentPoint(Car self, World world, Game game) {
+        MovingPoint result = null;
         Waypoint tile = Utils.getTile(world, game, new Point(self.getX(), self.getY()));
 
         int startFromWP = self.getNextWaypointIndex() - 1;
@@ -47,19 +50,35 @@ public class Map {
             }
 
             if (startPoint && point.getWaypoint().equals(tile)) {
-                return point;
+                result = point;
+                break;
             }
         }
 
         // search backwards - in case car has lost a path
+        result = searchBackwards(result, tile, i);
+
+        return rememberLastPoint(result);
+    }
+
+    private MovingPoint searchBackwards(MovingPoint result, Waypoint tile, int i) {
         for(;i>0; i--){
             MovingPoint movingPoint = points.get(i);
             if (movingPoint.getWaypoint().equals(tile)) {
-                return movingPoint;
+                result = movingPoint;
+                break;
             }
         }
+        return result;
+    }
 
-        return null;
+    private MovingPoint rememberLastPoint(MovingPoint result) {
+        if(result == null) {
+            return lastPoint;
+        } else {
+            lastPoint = result;
+            return result;
+        }
     }
 
     public MovingPoint getNextTurn(MovingPoint start) {
